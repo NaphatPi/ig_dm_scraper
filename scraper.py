@@ -1,7 +1,8 @@
-from instagrapi import Client
 import time
 import datetime
-
+import zipfile
+import os
+import json
 
 
 def _login_w_session_id(session_id):
@@ -79,6 +80,7 @@ def get_dm_from_api(oldest_date: str, session_id: str = None) -> list:
             A list containing messages from each thread (chat room)
 
     """
+    from instagrapi import Client
 
     session_id = session_id if session_id else input('Enter session_id: ')
     cl = _login_w_session_id(session_id)
@@ -147,6 +149,73 @@ def get_dm_from_api(oldest_date: str, session_id: str = None) -> list:
     return thread_list
 
 
-def get_dm_from_zip(path=None) -> list:
-    # TODO
-    pass
+def _find_zip_file():
+    """Find zip file(s) in the current working directory and validate.
+       Raise an error if found."""
+    z_list = []
+    for filename in os.listdir(os.getcwd()):
+        if filename.endswith('.zip'):
+            z_list.append(filename)
+
+    if len(z_list) > 1:
+        raise Exception('2 or more zip files are found. Please upload only 1 zip file.')
+    elif not zipfile.is_zipfile(z_list[0]):
+        raise Exception(f'the zip file {z_list[0]} is broken or invalid')
+    else:
+        return z_list[0]
+
+
+def _find_participant_name_from_zip(zipname):
+    """Find participant name from the zip file. Return empty string if not found"""
+    with zipfile.ZipFile(zipname, mode='r') as z:
+        for filename in z.namelist():
+            if 'personal_information/personal_information.json' in filename:
+                data = json.loads(z.read(filename))
+                try:
+                    name = data['profile_user'][0]['string_map_data']['Name']['value']
+                except:
+                    name = ""
+        print('Participant name:', name if name else '[not found]')
+
+        return name
+
+
+def get_dm_from_zip(oldest_date: str) -> list:
+    """Get direct message from zip file until oldest_date
+
+        Args:
+            oldest_date (str): date used as a cutoff to get data newer than this date
+
+        Return:
+            A list containing messages from each thread (chat room)
+
+    """
+    zipname = _find_zip_file()
+    participant_name = _find_participant_name_from_zip(zipname)
+    oldest_date = datetime.date.fromisoformat(oldest_date)
+    message_count = 0
+    thread_list = []
+    with zipfile.ZipFile(zipname, mode='r') as z:
+        for filename in z.namelist():
+            if 'inbox' in filename and filename.endswith('message_1.json'):
+                messages = json.loads(z.read(filename))['messages']
+                message_list = []
+                for message in messages:
+                    unix_timestamp = message['timestamp_ms'] / 1000
+                    if datetime.date.fromtimestamp(unix_timestamp) >= oldest_date:
+                        # mark participant name if found
+                        if message['sender_name'] == participant_name:
+                            message['sender_name'] = '[participant]'
+                        message_list.append(message)
+                    else:
+                        break
+                
+                if message_list: # if some messages are there
+                    message_count += len(message_list)
+                    thread_list.append({
+                        'message': message_list
+                    })
+
+        print(f'{len(thread_list)} threads - {message_count} messages collected')
+
+    return thread_list

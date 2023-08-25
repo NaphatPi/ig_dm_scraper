@@ -17,6 +17,10 @@ def _get_message_type(message: dict) -> str:
     elif 'content' in message:
         if 'an audio call' in message['content']:
             msg_type = 'audio/video call'
+        elif message['content'].endswith('shared a story.'):
+            msg_type = 'story mentioned'
+        elif message['content'].endswith('Liked a message'):
+            msg_type = 'story liked'
         else:
             msg_type = 'text'
     else:
@@ -27,7 +31,7 @@ def _get_message_type(message: dict) -> str:
 
 def _get_message_text(message: dict) -> str:
     """get text message if any from message dictionary"""
-    if 'content' in message and 'an audio call' not in message['content']:  # find a better way to check this
+    if 'content' in message:  # find a better way to check this
         text = message['content']
     else:
         text = ""
