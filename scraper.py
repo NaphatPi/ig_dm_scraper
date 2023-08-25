@@ -157,8 +157,10 @@ def _find_zip_file():
         if filename.endswith('.zip'):
             z_list.append(filename)
 
-    if len(z_list) > 1:
-        raise Exception('2 or more zip files are found. Please upload only 1 zip file.')
+    if len(z_list) == 0:
+        raise Exception('No zip file found. Please upload a zip file.')
+    elif len(z_list) > 1:
+        raise Exception('Too many zip files are found. Please upload only 1 zip file.')
     elif not zipfile.is_zipfile(z_list[0]):
         raise Exception(f'the zip file {z_list[0]} is broken or invalid')
     else:
