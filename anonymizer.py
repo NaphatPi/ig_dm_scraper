@@ -2,6 +2,8 @@ import pandas as pd
 import spacy
 nlp = spacy.load("en_core_web_sm")
 
+from nltk.tokenize import wordpunct_tokenize
+
 
 
 def _get_names_from_sender(sender_name:pd.Series) -> set:
@@ -29,7 +31,7 @@ def _anonymize_person_name(text: str, sender_name_set: set):
         anon_text = anon_text.replace(entity, "[person]")
 
     # Second, find names using names from sender names appraoch
-    named_entities = [word for word in anon_text.split() if word.lower() in sender_name_set]
+    named_entities = [word for word in wordpunct_tokenize(anon_text) if word.lower() in sender_name_set]
     for entity in named_entities:
         anon_text = anon_text.replace(entity, "[person]")
 
