@@ -152,6 +152,7 @@ def get_dm_from_api(oldest_date: str, session_id: str = None) -> list:
 def _find_zip_file():
     """Find zip file(s) in the current working directory and validate.
        Raise an error if found."""
+    print('Finding the target zip file ... ', end="")
     z_list = []
     for filename in os.listdir(os.getcwd()):
         if filename.endswith('.zip'):
@@ -164,20 +165,23 @@ def _find_zip_file():
     elif not zipfile.is_zipfile(z_list[0]):
         raise Exception(f'The zip file {z_list[0]} is broken/invalid or still uploading.')
     else:
+        print('done')
         return z_list[0]
 
 
 def _find_participant_name_from_zip(zipname):
     """Find participant name from the zip file. Return empty string if not found"""
+    print('Finding participant name ... ', end="")
     with zipfile.ZipFile(zipname, mode='r') as z:
         for filename in z.namelist():
             if 'personal_information/personal_information.json' in filename:
                 data = json.loads(z.read(filename))
                 try:
                     name = data['profile_user'][0]['string_map_data']['Name']['value']
+                    print('done')
                 except:
-                    name = ""
-        print('Participant name:', name if name else '[not found]')
+                    raise Exception('Participant name not found in the zipfile.')
+        print('Participant name:', name)
 
         return name
 
@@ -197,6 +201,7 @@ def get_dm_from_zip(oldest_date: str) -> list:
     oldest_date = datetime.date.fromisoformat(oldest_date)
     message_count = 0
     thread_list = []
+    print('Getting data from the zip file ... ', end="")
     with zipfile.ZipFile(zipname, mode='r') as z:
         for filename in z.namelist():
             if 'inbox' in filename and filename.endswith('message_1.json'):
@@ -217,7 +222,8 @@ def get_dm_from_zip(oldest_date: str) -> list:
                     thread_list.append({
                         'message': message_list
                     })
-
+                    
+        print('done')
         print(f'{len(thread_list)} threads - {message_count} messages collected')
 
     return thread_list
