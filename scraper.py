@@ -212,7 +212,7 @@ def get_dm_from_zip(oldest_date: str) -> list:
                     if datetime.date.fromtimestamp(unix_timestamp) >= oldest_date:
                         # mark participant name if found
                         if message['sender_name'] == participant_name:
-                            message['sender_name'] = '[participant]'
+                            message['sender_name'] = 'participant'
                         message_list.append(message)
                     else:
                         break

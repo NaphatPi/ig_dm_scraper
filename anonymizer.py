@@ -51,13 +51,13 @@ def anonymize(df: pd.DataFrame):
     anom_df = df.copy()
     # Anonymize sender_name column
     sender_name = list(df.sender_name.unique())
-    if '[participant]' in sender_name:
-        sender_name.remove('[participant]')
+    if 'participant' in sender_name:
+        sender_name.remove('participant')
     else:
         raise Exception('[participant] not found in sender_name. Failed to anonymize.')
 
-    name_map = {v:f"[person_{i}]" for i, v in enumerate(sender_name, 1)}
-    name_map['[participant]'] = '[participant]'
+    name_map = {v:f"person_{i}" for i, v in enumerate(sender_name, 1)}
+    name_map['participant'] = 'participant'
     anom_df['sender_name'] = df.sender_name.map(name_map)
 
     # Anonymize text column
