@@ -205,7 +205,8 @@ def get_dm_from_zip(oldest_date: str) -> list:
     with zipfile.ZipFile(zipname, mode='r') as z:
         for filename in z.namelist():
             if 'inbox' in filename and filename.endswith('message_1.json'):
-                messages = json.loads(z.read(filename))['messages']
+                decoded_text = z.read(filename)
+                messages = json.loads(decoded_text)['messages']
                 message_list = []
                 for message in messages:
                     unix_timestamp = message['timestamp_ms'] / 1000

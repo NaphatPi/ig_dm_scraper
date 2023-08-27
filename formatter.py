@@ -33,11 +33,22 @@ def _get_message_type(message: dict) -> str:
 def _get_message_text(message: dict) -> str:
     """get text message if any from message dictionary"""
     if 'content' in message:  # find a better way to check this
-        text = message['content']
+        text = message['content'].encode('raw_unicode_escape').decode('utf-8')
     else:
         text = ""
 
     return text
+
+
+def _get_reaction(message: dict) -> int:
+    """get count of reactions of the message"""
+    if 'reactions' in message:
+        reaction_text = "".join([dct['reaction'] for dct in message['reactions']])
+        reaction_text = reaction_text.encode('raw_unicode_escape').decode('utf-8')
+    else:
+        reaction_text = ""
+
+    return reaction_text
 
 
 def _get_reaction_count(message: dict) -> int:
@@ -66,11 +77,11 @@ def reformat(threads: list[dict], as_dataframe=False):
             output.append(
                 {
                     'thread_id': thread_idx,
-                    'sender_name': message['sender_name'],
+                    'sender_name': message['sender_name'].encode('raw_unicode_escape').decode('utf-8'),
                     'timestamp': datetime.fromtimestamp(message['timestamp_ms']/ 1000).strftime('%Y-%m-%d %H:%M:%S'),
                     'message_type': _get_message_type(message),
                     'text': _get_message_text(message),
-                    'reaction_count': _get_reaction_count(message)
+                    'reaction': _get_reaction(message)
                 }
             )
     

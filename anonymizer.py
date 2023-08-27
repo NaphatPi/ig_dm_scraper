@@ -5,6 +5,12 @@ nlp = spacy.load("en_core_web_sm")
 from nltk.tokenize import wordpunct_tokenize
 
 
+ENDING = ['sent an attachment.', 
+            'missed an audio call', 
+            'started an audio call',
+            'shared a story.']
+
+
 
 def _get_names_from_sender(sender_name:pd.Series) -> set:
     """Get a set of all possible names from sender names"""
@@ -23,17 +29,27 @@ def _get_names_from_sender(sender_name:pd.Series) -> set:
 
 def _anonymize_person_name(text: str, sender_name_set: set):
     """Anonymize person names in text"""
-    doc = nlp(text)
-    # First, find names using Name Entity Recognition appraoch
-    named_entities = [ent.text for ent in doc.ents if ent.label_ == 'PERSON']
-    anon_text = text
-    for entity in named_entities:
-        anon_text = anon_text.replace(entity, "[person]")
 
-    # Second, find names using names from sender names appraoch
-    named_entities = [word for word in wordpunct_tokenize(anon_text) if word.lower() in sender_name_set]
-    for entity in named_entities:
-        anon_text = anon_text.replace(entity, "[person]")
+    # First, remove from some clear patterns
+    pattern_found = False
+    for ending in ENDING:
+        if text.endswith(ending):
+            anon_text = '[person] ' + ending
+            pattern_found = True
+            break
+    
+    if not pattern_found:
+        # Second, find names using Name Entity Recognition appraoch
+        doc = nlp(text)
+        named_entities = [ent.text for ent in doc.ents if ent.label_ == 'PERSON']
+        anon_text = text
+        for entity in named_entities:
+            anon_text = anon_text.replace(entity, "[person]")
+
+        # Third, find names using names from sender names appraoch
+        named_entities = [word for word in wordpunct_tokenize(anon_text) if word.lower() in sender_name_set]
+        for entity in named_entities:
+            anon_text = anon_text.replace(entity, "[person]")
 
     return anon_text
 
