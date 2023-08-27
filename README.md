@@ -13,7 +13,7 @@ from ig_dm_scraper.scraper import get_dm_from_zip
 from ig_dm_scraper.formatter import reformat
 from ig_dm_scraper.anonymizer import anonymize
 
-raw = get_dm_from_zip('2023-05-01')  # Get data as old as the specific date
+raw = get_dm_from_zip('2023-05-01')  # Get data that is newer the specific date
 df = reformat(raw, as_dataframe=True)  # reformat to Pandas dataframe 
 anom_df = anonymize(df)  # Anonymize the data
 anom_df.head()
