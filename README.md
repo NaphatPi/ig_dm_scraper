@@ -1,5 +1,7 @@
 ## Instagram Direct Message Scraper
-This Python package help scraper direct message information from Instagram official dump zipfile (Tips for how to get IG official dump information in JSON format https://help.instagram.com/181231772500920) with functions to reformat and anonymize personal data such as names.
+This Python package helps scraping direct message information from an Instagram official dump zipfile (in JSON format) with functions to reformat and anonymize personal data such as names.
+
+Tips for how to get IG official dump information in JSON format https://help.instagram.com/181231772500920 
 
 #### Example
 
